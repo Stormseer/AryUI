@@ -1,0 +1,10 @@
+## Interface: 120000, 110200, 110107, 50500, 40402, 11507
+## Version: 0.1
+## Title: AryUI
+## Notes: Hopefully modular minor UI tweaks
+## Author: Aryella
+## SavedVariables: AryUIDB
+
+AryUI.lua
+modules/TooltipAnchor.lua
+modules/ChatBackground.lua
