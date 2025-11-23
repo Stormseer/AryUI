@@ -29,6 +29,7 @@
         "ExpansionLandingPage",
         "GenericTraitFrame",
         "GarrisonLandingPage_Toggle",
-        "ToggleExpansionLandingPage"
+        "ToggleExpansionLandingPage",
+        "DEFAULT_CHAT_FRAME"
     ]
 }

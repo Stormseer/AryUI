@@ -8,3 +8,4 @@
 AryUI.lua
 modules/TooltipAnchor.lua
 modules/ChatBackground.lua
+modules/VaultReport.lua
