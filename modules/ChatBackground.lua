@@ -87,6 +87,20 @@ function module:OnLoad()
     end
 end
 
+function module:Toggle(enabled)
+    if enabled then
+        if not self.frame then
+            self.frame = CreateFrame("Frame", "AryUIChatBackgroundFrame", UIParent)
+        end
+        self.frame:Show()
+        self:ApplySettings()
+    else
+        if self.frame then
+            self.frame:Hide()
+        end
+    end
+end
+
 -- Called by the options UI
 function module:ApplySettings()
     if not frame then return end

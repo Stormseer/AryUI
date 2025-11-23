@@ -1,79 +1,46 @@
--- AryUI.lua — full final file with nested module subpanels in the options menu
--- Drop this into your AryUI addon folder (keep your modules/ files as-is).
+--========================================--
+-- AryUI - Main AddOn File (fixed)
+--========================================--
 
--- Base addon table
 AryUI = AryUI or {}
 AryUI.modules = AryUI.modules or {}
 
--- Core defaults
-local defaults = {
+------------------------------------------------------------
+-- APPLY GLOBAL DEFAULTS
+------------------------------------------------------------
+local globalDefaults = {
     tooltipOffsetX = -350,
     tooltipOffsetY = 165,
 }
 
--- Utility: apply defaults to a table
-local function ApplyDefaults(db, src)
-    for k, v in pairs(src) do
-        if db[k] == nil then
-            db[k] = v
+local function ApplyDefaults(target, defaults)
+    for k, v in pairs(defaults) do
+        if target[k] == nil then
+            target[k] = v
         end
     end
 end
 
--- Forward declare panel creator
-local panel
-local function CreateOptionsPanel() end
-
-
--------------------------------------------------------------
--- SavedVariables + module init
--------------------------------------------------------------
-local loader = CreateFrame("Frame")
-loader:RegisterEvent("ADDON_LOADED")
-loader:SetScript("OnEvent", function(self, event, addonName)
-    if addonName ~= "AryUI" then return end
-
-    if not AryUIDB then AryUIDB = {} end
-    ApplyDefaults(AryUIDB, defaults)
-
-    -- let modules register their defaults first (e.g. chatBackground)
-    for _, module in ipairs(AryUI.modules) do
-        if module.RegisterDefaults then
-            module:RegisterDefaults()
-        end
-    end
-
-    -- then call module OnLoad
-    for _, module in ipairs(AryUI.modules) do
-        if module.OnLoad then
-            module:OnLoad()
-        end
-    end
-
-    -- finally build the options panel now that DB/modules are ready
-    CreateOptionsPanel()
-end)
-
-
--------------------------------------------------------------
--- Slash Command
--------------------------------------------------------------
+------------------------------------------------------------
+-- SLASH COMMAND
+------------------------------------------------------------
 SLASH_ARYUI1 = "/aryui"
 SlashCmdList["ARYUI"] = function()
-    CreateOptionsPanel()
     if Settings and Settings.OpenToCategory then
         Settings.OpenToCategory("AryUI")
-    elseif InterfaceOptionsFrame_OpenToCategory then
-        -- call twice to ensure selection (legacy behavior)
-        InterfaceOptionsFrame_OpenToCategory(AryUIOptionsPanel or "AryUI")
-        InterfaceOptionsFrame_OpenToCategory(AryUIOptionsPanel or "AryUI")
+    else
+        if AryUIOptionsPanel then
+            InterfaceOptionsFrame_OpenToCategory(AryUIOptionsPanel)
+            InterfaceOptionsFrame_OpenToCategory(AryUIOptionsPanel)
+        end
     end
 end
 
+------------------------------------------------------------
+-- OPTIONS PANEL HELPERS
+------------------------------------------------------------
+local panel = nil
 
--------------------------------------------------------------
--- UI Helpers
--------------------------------------------------------------
 local function CreateHeader(parent, text, offsetY)
     local header = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     header:SetPoint("TOPLEFT", 16, offsetY)
@@ -81,31 +48,25 @@ local function CreateHeader(parent, text, offsetY)
     return header
 end
 
--- Generic slider + editbox helper.
--- Note: This helper by default floors values (integer behavior).
--- For floating sliders (alpha) we override its scripts after creation.
+-- Generic slider with attached edit box
 local function CreateSliderWithBox(name, parent, label, minVal, maxVal, initial, x, y, onChanged)
-    -- Slider (OptionsSliderTemplate creates Low/High/Text globals)
     local slider = CreateFrame("Slider", name, parent, "OptionsSliderTemplate")
     slider:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
     slider:SetMinMaxValues(minVal, maxVal)
+    slider:SetValue(initial)
     slider:SetValueStep(1)
     slider:SetObeyStepOnDrag(true)
-    slider:SetValue(initial)
 
-    -- Set low/high/text labels (these globals exist because of the template)
     if _G[name .. "Low"] then _G[name .. "Low"]:SetText(tostring(minVal)) end
     if _G[name .. "High"] then _G[name .. "High"]:SetText(tostring(maxVal)) end
     if _G[name .. "Text"] then _G[name .. "Text"]:SetText(label .. ": " .. initial) end
 
-    -- Edit box
     local box = CreateFrame("EditBox", name .. "EditBox", parent, "InputBoxTemplate")
     box:SetAutoFocus(false)
     box:SetSize(60, 24)
     box:SetPoint("LEFT", slider, "RIGHT", 10, 0)
     box:SetText(tostring(initial))
 
-    -- Default integer slider behavior
     slider:SetScript("OnValueChanged", function(self, value)
         value = math.floor(value)
         box:SetText(value)
@@ -114,10 +75,10 @@ local function CreateSliderWithBox(name, parent, label, minVal, maxVal, initial,
     end)
 
     box:SetScript("OnEnterPressed", function(self)
-        local val = tonumber(self:GetText()) or minVal
-        val = math.max(minVal, math.min(maxVal, val))
-        val = math.floor(val)
-        slider:SetValue(val)
+        local v = tonumber(self:GetText()) or minVal
+        v = math.max(minVal, math.min(maxVal, v))
+        v = math.floor(v)
+        slider:SetValue(v)
         self:ClearFocus()
     end)
 
@@ -129,96 +90,60 @@ local function CreateSliderWithBox(name, parent, label, minVal, maxVal, initial,
     return slider, box
 end
 
-
--------------------------------------------------------------
--- CreateOptionsPanel() — builds main panel + subpanels per module
--------------------------------------------------------------
-function CreateOptionsPanel()
+------------------------------------------------------------
+-- CreateOptionsPanel (main + subpanels)
+------------------------------------------------------------
+local function CreateOptionsPanel()
     if panel then return end
 
-    -- Main panel (used as "root" for legacy InterfaceOptions)
-    local mainPanel = CreateFrame("Frame", "AryUIOptionsPanel", UIParent)
-    mainPanel.name = "AryUI"
+    panel = CreateFrame("Frame", "AryUIOptionsPanel", UIParent)
+    panel.name = "AryUI"
 
-    local mainCategory -- for modern Settings API
-
-    -- Register main category
+    local mainCategory
     if Settings and Settings.RegisterCanvasLayoutCategory then
-        mainCategory, mainPanel.layout = Settings.RegisterCanvasLayoutCategory(mainPanel, mainPanel.name, mainPanel.name)
-        mainCategory.ID = mainPanel.name
+        mainCategory = Settings.RegisterCanvasLayoutCategory(panel, "AryUI", "AryUI")
         Settings.RegisterAddOnCategory(mainCategory)
-    elseif InterfaceOptions_AddCategory then
-        InterfaceOptions_AddCategory(mainPanel)
+    else
+        InterfaceOptions_AddCategory(panel)
     end
 
-    -- Helper to create a subpanel and register it appropriately
-    local function CreateModuleSubpanel(subName, buildFunc)
-        local subPanelName = "AryUIOptionsPanel_" .. subName:gsub("%s+", "")
-        local subpanel = CreateFrame("Frame", subPanelName, UIParent)
-        subpanel.name = subName
+    local function CreateSubpanel(title, builder)
+        local sub = CreateFrame("Frame", "AryUI_Subpanel_" .. title:gsub("%s+", ""), UIParent)
+        sub.name = title
+        sub.parent = "AryUI"
 
-        -- Legacy: set parent and register so it appears as a child entry
-        if InterfaceOptions_AddCategory then
-            subpanel.parent = mainPanel.name
-            InterfaceOptions_AddCategory(subpanel)
-        end
+        if builder then builder(sub) end
 
-        -- Modern: register a canvas subcategory under mainCategory if available
         if Settings and Settings.RegisterCanvasLayoutSubcategory and mainCategory then
-            local subcat = Settings.RegisterCanvasLayoutSubcategory(mainCategory, subpanel, subName)
+            local subcat = Settings.RegisterCanvasLayoutSubcategory(mainCategory, sub, title)
             Settings.RegisterAddOnCategory(subcat)
+        else
+            InterfaceOptions_AddCategory(sub)
         end
-
-        -- Build its contents
-        if buildFunc then
-            buildFunc(subpanel)
-        end
-
-        return subpanel
     end
 
-    -- Small title helper for subpanels
-    local function MakeTitle(parent, titleText)
-        local title = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-        title:SetPoint("TOPLEFT", 16, -16)
-        title:SetText(titleText)
-        return title
-    end
-
-    ---------------------------------------------------------
+    -------------------------------------------------------
     -- Tooltip Anchor subpanel
-    ---------------------------------------------------------
-    CreateModuleSubpanel("Tooltip Anchor", function(p)
-        MakeTitle(p, "Tooltip Anchor Settings")
+    -------------------------------------------------------
+    CreateSubpanel("Tooltip Anchor", function(p)
+        CreateHeader(p, "Tooltip Anchor", -16)
 
-        CreateSliderWithBox(
-            "AryUISubTooltipX",
-            p,
-            "Tooltip Offset X",
-            -1000, 1000,
-            AryUIDB.tooltipOffsetX,
-            16, -60,
-            function(value) AryUIDB.tooltipOffsetX = value end
+        CreateSliderWithBox("AryUITooltipX", p, "Offset X", -1000, 1000, AryUIDB.tooltipOffsetX or globalDefaults.tooltipOffsetX, 16, -70,
+            function(v) AryUIDB.tooltipOffsetX = v end
         )
 
-        CreateSliderWithBox(
-            "AryUISubTooltipY",
-            p,
-            "Tooltip Offset Y",
-            -1000, 1000,
-            AryUIDB.tooltipOffsetY,
-            16, -130,
-            function(value) AryUIDB.tooltipOffsetY = value end
+        CreateSliderWithBox("AryUITooltipY", p, "Offset Y", -1000, 1000, AryUIDB.tooltipOffsetY or globalDefaults.tooltipOffsetY, 16, -140,
+            function(v) AryUIDB.tooltipOffsetY = v end
         )
     end)
 
-    ---------------------------------------------------------
+    -------------------------------------------------------
     -- Chat Background subpanel
-    ---------------------------------------------------------
-    CreateModuleSubpanel("Chat Background", function(p)
-        MakeTitle(p, "Chat Background Module")
+    -------------------------------------------------------
+    CreateSubpanel("Chat Background", function(p)
+        CreateHeader(p, "Chat Background", -16)
 
-        -- Enable checkbox
+         -- Enable checkbox
         local enableCB = CreateFrame("CheckButton", "AryUIChatBackgroundEnable_Sub", p, "ChatConfigCheckButtonTemplate")
         enableCB:SetPoint("TOPLEFT", 16, -52)
         enableCB.Text:SetText("Enable Chat Background")
@@ -250,57 +175,38 @@ function CreateOptionsPanel()
         end)
 
         -- Width
-        CreateSliderWithBox(
-            "AryUISubCBWidth",
-            p,
-            "Background Width",
-            20, 1000,
-            (AryUIDB.chatBackground and AryUIDB.chatBackground.width) or 300,
-            16, -120,
-            function(value)
-                AryUIDB.chatBackground.width = value
+        CreateSliderWithBox("AryUIChatBGWidth", p, "Width", 50, 2000, (AryUIDB.chatBackground and AryUIDB.chatBackground.width) or 300, 16, -120,
+            function(v)
+                AryUIDB.chatBackground.width = v
                 if AryUI.ChatBackgroundModule and AryUI.ChatBackgroundModule.ApplySettings then AryUI.ChatBackgroundModule:ApplySettings() end
             end
         )
 
         -- Height
-        CreateSliderWithBox(
-            "AryUISubCBHeight",
-            p,
-            "Background Height",
-            20, 1000,
-            (AryUIDB.chatBackground and AryUIDB.chatBackground.height) or 150,
-            16, -190,
-            function(value)
-                AryUIDB.chatBackground.height = value
+        CreateSliderWithBox("AryUIChatBGHeight", p, "Height", 50, 2000, (AryUIDB.chatBackground and AryUIDB.chatBackground.height) or 200, 16, -190,
+            function(v)
+                AryUIDB.chatBackground.height = v
                 if AryUI.ChatBackgroundModule and AryUI.ChatBackgroundModule.ApplySettings then AryUI.ChatBackgroundModule:ApplySettings() end
             end
         )
 
-        -- Opacity (alpha) slider: create, then override for decimal precision
-        local alphaSlider, alphaBox = CreateSliderWithBox(
-            "AryUISubCBAlpha",
-            p,
-            "Background Opacity",
-            0, 1,
-            (AryUIDB.chatBackground and AryUIDB.chatBackground.alpha) or 0.60,
-            16, -260,
+        -- Alpha (float)
+        local alphaSlider, alphaBox = CreateSliderWithBox("AryUIChatBGAlpha", p, "Opacity", 0, 1, (AryUIDB.chatBackground and AryUIDB.chatBackground.alpha) or 0.6, 16, -260,
             function() end
         )
         alphaSlider:SetValueStep(0.01)
         alphaSlider:SetObeyStepOnDrag(true)
-        -- override OnValueChanged for float precision
         alphaSlider:SetScript("OnValueChanged", function(self, value)
-            value = tonumber(string.format("%.2f", value)) or 0.00
+            value = tonumber(string.format("%.2f", value)) or 0
             alphaBox:SetText(string.format("%.2f", value))
-            if _G["AryUISubCBAlphaText"] then _G["AryUISubCBAlphaText"]:SetText("Background Opacity: " .. string.format("%.2f", value)) end
+            if _G["AryUIChatBGAlphaText"] then _G["AryUIChatBGAlphaText"]:SetText("Opacity: " .. string.format("%.2f", value)) end
             AryUIDB.chatBackground.alpha = value
             if AryUI.ChatBackgroundModule and AryUI.ChatBackgroundModule.ApplySettings then AryUI.ChatBackgroundModule:ApplySettings() end
         end)
         alphaBox:SetScript("OnEnterPressed", function(self)
             local val = tonumber(self:GetText())
             if not val then
-                self:SetText(string.format("%.2f", AryUIDB.chatBackground.alpha or 0.60))
+                self:SetText(string.format("%.2f", AryUIDB.chatBackground and AryUIDB.chatBackground.alpha or 0.6))
                 self:ClearFocus()
                 return
             end
@@ -314,12 +220,12 @@ function CreateOptionsPanel()
             self:ClearFocus()
         end)
 
-        -- Frame strata controls
+        -- Frame Strata dropdown (re-added)
         local strataLabel = p:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
         strataLabel:SetPoint("TOPLEFT", 16, -320)
         strataLabel:SetText("Frame Strata")
 
-        local strataDrop = CreateFrame("Frame", "AryUISubCBStrataDrop", p, "UIDropDownMenuTemplate")
+        local strataDrop = CreateFrame("Frame", "AryUIChatBGStrataDrop", p, "UIDropDownMenuTemplate")
         strataDrop:SetPoint("TOPLEFT", strataLabel, "BOTTOMLEFT", -16, -5)
 
         local strataOptions = {
@@ -332,48 +238,94 @@ function CreateOptionsPanel()
 
         UIDropDownMenu_Initialize(strataDrop, function(self, level)
             local info = UIDropDownMenu_CreateInfo()
-            for _, strata in ipairs(strataOptions) do
-                info.text = strata
+            for _, s in ipairs(strataOptions) do
+                info.text = s
                 info.func = function()
-                    AryUIDB.chatBackground.strata = strata
-                    UIDropDownMenu_SetText(strataDrop, strata)
+                    AryUIDB.chatBackground = AryUIDB.chatBackground or {}
+                    AryUIDB.chatBackground.strata = s
+                    UIDropDownMenu_SetText(strataDrop, s)
                     if AryUI.ChatBackgroundModule and AryUI.ChatBackgroundModule.ApplySettings then AryUI.ChatBackgroundModule:ApplySettings() end
                 end
-                info.checked = (AryUIDB.chatBackground and AryUIDB.chatBackground.strata == strata)
+                info.checked = (AryUIDB.chatBackground and AryUIDB.chatBackground.strata == s)
                 UIDropDownMenu_AddButton(info)
             end
         end)
     end)
 
-    ---------------------------------------------------------
+    -------------------------------------------------------
     -- Vault Report subpanel
-    ---------------------------------------------------------
-    CreateModuleSubpanel("Vault Report", function(p)
-        MakeTitle(p, "Vault Report Module")
+    -------------------------------------------------------
+    CreateSubpanel("Vault Report", function(p)
+        CreateHeader(p, "Vault Report", -16)
 
-        local enableVR = CreateFrame("CheckButton", "AryUIVaultReportEnable_Sub", p, "ChatConfigCheckButtonTemplate")
-        enableVR:SetPoint("TOPLEFT", 16, -52)
-        enableVR.Text:SetText("Enable VaultReport")
-        enableVR:SetChecked(AryUIDB.vaultReport and AryUIDB.vaultReport.enabled)
-        enableVR:SetScript("OnClick", function(self)
-            if not AryUIDB.vaultReport then AryUIDB.vaultReport = {} end
+        local vrCheckbox = CreateFrame("CheckButton", "AryUIVaultReportEnable_Sub", p, "ChatConfigCheckButtonTemplate")
+        vrCheckbox:SetPoint("TOPLEFT", 16, -50)
+        vrCheckbox.Text:SetText("Enable Vault Report")
+        vrCheckbox:SetChecked(AryUIDB.vaultReport and AryUIDB.vaultReport.enabled)
+        vrCheckbox:SetScript("OnClick", function(self)
+            AryUIDB.vaultReport = AryUIDB.vaultReport or {}
             AryUIDB.vaultReport.enabled = self:GetChecked()
             if AryUI.VaultReportModule and AryUI.VaultReportModule.Toggle then
                 AryUI.VaultReportModule:Toggle(self:GetChecked())
             end
         end)
 
-        local testBtn = CreateFrame("Button", "AryUIVaultReportTest_Sub", p, "UIPanelButtonTemplate")
-        testBtn:SetSize(100, 24)
-        testBtn:SetPoint("TOPLEFT", enableVR, "BOTTOMLEFT", 0, -14)
-        testBtn:SetText("Open Vault")
-        testBtn:SetScript("OnClick", function()
+        local vrButton = CreateFrame("Button", "AryUIVaultReportTest_Sub", p, "UIPanelButtonTemplate")
+        vrButton:SetSize(100, 24)
+        vrButton:SetPoint("TOPLEFT", vrCheckbox, "BOTTOMLEFT", 0, -10)
+        vrButton:SetText("Open Vault")
+        vrButton:SetScript("OnClick", function()
             if AryUI.VaultReportModule and AryUI.VaultReportModule.OpenVault then
                 AryUI.VaultReportModule:OpenVault()
             end
         end)
     end)
 
-    -- expose the main panel globally so legacy code can reference it by name
-    panel = mainPanel
+    -------------------------------------------------------
+    -- Auction House Filter subpanel
+    -------------------------------------------------------
+    CreateSubpanel("Auction House Filter", function(p)
+        CreateHeader(p, "Auction House Filter", -16)
+
+        local cb = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
+        cb:SetPoint("TOPLEFT", 16, -50)
+        cb.Text:SetText("Enable AH / Crafting Orders / Auctionator Filters")
+        cb:SetChecked(AryUIDB.ahFilter and AryUIDB.ahFilter.enabled)
+        cb:SetScript("OnClick", function(self)
+            AryUIDB.ahFilter = AryUIDB.ahFilter or {}
+            AryUIDB.ahFilter.enabled = self:GetChecked()
+            if AryUI.AHFilterModule and AryUI.AHFilterModule.Toggle then
+                AryUI.AHFilterModule:Toggle(self:GetChecked())
+            end
+        end)
+    end)
 end
+
+------------------------------------------------------------
+-- ADDON LOAD HANDLER
+------------------------------------------------------------
+local loader = CreateFrame("Frame")
+loader:RegisterEvent("ADDON_LOADED")
+loader:SetScript("OnEvent", function(self, event, addon)
+    if addon ~= "AryUI" then return end
+
+    if not AryUIDB then AryUIDB = {} end
+    ApplyDefaults(AryUIDB, globalDefaults)
+
+    -- Allow modules to register defaults safely (modules may register themselves on file load)
+    for _, mod in ipairs(AryUI.modules) do
+        if mod.RegisterDefaults then
+            mod:RegisterDefaults()
+        end
+    end
+
+    -- Module OnLoad (attach/create frames)
+    for _, mod in ipairs(AryUI.modules) do
+        if mod.OnLoad then
+            mod:OnLoad()
+        end
+    end
+
+    -- Build options now
+    CreateOptionsPanel()
+end)

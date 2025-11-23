@@ -30,6 +30,9 @@
         "GenericTraitFrame",
         "GarrisonLandingPage_Toggle",
         "ToggleExpansionLandingPage",
-        "DEFAULT_CHAT_FRAME"
+        "DEFAULT_CHAT_FRAME",
+        "AuctionHouseFrame",
+        "ProfessionsCustomerOrdersFrame",
+        "LE_EXPANSION_LEVEL_CURRENT"
     ]
 }
