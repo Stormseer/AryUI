@@ -285,20 +285,119 @@ local function CreateOptionsPanel()
     -- Auction House Filter subpanel
     -------------------------------------------------------
     CreateSubpanel("Auction House Filter", function(p)
-        CreateHeader(p, "Auction House Filter", -16)
+        local ahHeader = CreateHeader(p, "Auction House Filter", -15)
 
-        local cb = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
-        cb:SetPoint("TOPLEFT", 16, -50)
-        cb.Text:SetText("Enable AH / Crafting Orders / Auctionator Filters")
-        cb:SetChecked(AryUIDB.ahFilter and AryUIDB.ahFilter.enabled)
-        cb:SetScript("OnClick", function(self)
+        -- Separator
+        local line0 = p:CreateTexture(nil, "ARTWORK")
+        line0:SetColorTexture(1,1,1,0.05)
+        line0:SetSize(600, 1)
+        line0:SetPoint("TOPLEFT", ahHeader, "TOPLEFT", 0, -18)
+
+        -- Section: Crafting Orders (Blizzard)
+        local coTitle = p:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+        coTitle:SetPoint("TOPLEFT", 16, -50)
+        coTitle:SetText("Crafting Orders (Blizzard)")
+
+        -- Crafting Orders: Set filter state
+        local coSet = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
+        coSet:SetPoint("TOPLEFT", coTitle, "BOTTOMLEFT", 0, -8)
+        coSet.Text:SetText("Set filter state")
+        coSet:SetChecked(AryUIDB.ahFilter and AryUIDB.ahFilter.forCraftOrdersOverwrite)
+        coSet:SetScript("OnClick", function(self)
             AryUIDB.ahFilter = AryUIDB.ahFilter or {}
-            AryUIDB.ahFilter.enabled = self:GetChecked()
-            if AryUI.AHFilterModule and AryUI.AHFilterModule.Toggle then
-                AryUI.AHFilterModule:Toggle(self:GetChecked())
-            end
+            AryUIDB.ahFilter.forCraftOrdersOverwrite = self:GetChecked()
         end)
+
+        -- Crafting Orders: Current Expansion Only value
+        local coVal = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
+        coVal:SetPoint("LEFT", coSet, "RIGHT", 220, 0)
+        coVal.Text:SetText("Current Expansion Only")
+        coVal:SetChecked(AryUIDB.ahFilter and AryUIDB.ahFilter.forCraftOrdersValue)
+        coVal:SetScript("OnClick", function(self)
+            AryUIDB.ahFilter = AryUIDB.ahFilter or {}
+            AryUIDB.ahFilter.forCraftOrdersValue = self:GetChecked()
+        end)
+
+        -- Crafting Orders: focus searchbar
+        local coFocus = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
+        coFocus:SetPoint("TOPLEFT", coSet, "BOTTOMLEFT", 0, -8)
+        coFocus.Text:SetText("... and focus search bar")
+        coFocus:SetChecked(AryUIDB.ahFilter and AryUIDB.ahFilter.forCraftOrdersFocusSearchBar)
+        coFocus:SetScript("OnClick", function(self)
+            AryUIDB.ahFilter = AryUIDB.ahFilter or {}
+            AryUIDB.ahFilter.forCraftOrdersFocusSearchBar = self:GetChecked()
+        end)
+
+        -- Separator
+        local line1 = p:CreateTexture(nil, "ARTWORK")
+        line1:SetColorTexture(1,1,1,0.05)
+        line1:SetSize(600, 1)
+        line1:SetPoint("TOPLEFT", coFocus, "BOTTOMLEFT", 0, -12)
+
+        -- Section: Auction House (Blizzard)
+        local ahTitle = p:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+        ahTitle:SetPoint("TOPLEFT", line1, "BOTTOMLEFT", 0, -12)
+        ahTitle:SetText("Auction House (Blizzard)")
+
+        local ahSet = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
+        ahSet:SetPoint("TOPLEFT", ahTitle, "BOTTOMLEFT", 0, -8)
+        ahSet.Text:SetText("Set filter state")
+        ahSet:SetChecked(AryUIDB.ahFilter and AryUIDB.ahFilter.forAuctionHouseOverwrite)
+        ahSet:SetScript("OnClick", function(self)
+            AryUIDB.ahFilter = AryUIDB.ahFilter or {}
+            AryUIDB.ahFilter.forAuctionHouseOverwrite = self:GetChecked()
+        end)
+
+        local ahVal = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
+        ahVal:SetPoint("LEFT", ahSet, "RIGHT", 220, 0)
+        ahVal.Text:SetText("Current Expansion Only")
+        ahVal:SetChecked(AryUIDB.ahFilter and AryUIDB.ahFilter.forAuctionHouseValue)
+        ahVal:SetScript("OnClick", function(self)
+            AryUIDB.ahFilter = AryUIDB.ahFilter or {}
+            AryUIDB.ahFilter.forAuctionHouseValue = self:GetChecked()
+        end)
+
+        local ahFocus = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
+        ahFocus:SetPoint("TOPLEFT", ahSet, "BOTTOMLEFT", 0, -8)
+        ahFocus.Text:SetText("... and focus search bar")
+        ahFocus:SetChecked(AryUIDB.ahFilter and AryUIDB.ahFilter.forAuctionHouseFocusSearchBar)
+        ahFocus:SetScript("OnClick", function(self)
+            AryUIDB.ahFilter = AryUIDB.ahFilter or {}
+            AryUIDB.ahFilter.forAuctionHouseFocusSearchBar = self:GetChecked()
+        end)
+
+        -- Separator
+        local line2 = p:CreateTexture(nil, "ARTWORK")
+        line2:SetColorTexture(1,1,1,0.05)
+        line2:SetSize(600, 1)
+        line2:SetPoint("TOPLEFT", ahFocus, "BOTTOMLEFT", 0, -12)
+
+        -- Section: Auctionator (addon)
+        local atTitle = p:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+        atTitle:SetPoint("TOPLEFT", line2, "BOTTOMLEFT", 0, -12)
+        atTitle:SetText("Auctionator (addon) -- disabled because lazy")
+        
+        --[[
+        local atSet = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
+        atSet:SetPoint("TOPLEFT", atTitle, "BOTTOMLEFT", 0, -8)
+        atSet.Text:SetText("Set filter state")
+        atSet:SetChecked(AryUIDB.ahFilter and AryUIDB.ahFilter.forAuctionatorOverwrite)
+        atSet:SetScript("OnClick", function(self)
+            AryUIDB.ahFilter = AryUIDB.ahFilter or {}
+            AryUIDB.ahFilter.forAuctionatorOverwrite = self:GetChecked()
+        end)
+
+        local atVal = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
+        atVal:SetPoint("LEFT", atSet, "RIGHT", 220, 0)
+        atVal.Text:SetText("Current Expansion Only")
+        atVal:SetChecked(AryUIDB.ahFilter and AryUIDB.ahFilter.forAuctionatorValue)
+        atVal:SetScript("OnClick", function(self)
+            AryUIDB.ahFilter = AryUIDB.ahFilter or {}
+            AryUIDB.ahFilter.forAuctionatorValue = self:GetChecked()
+        end)
+        --]]
     end)
+
 end
 
 ------------------------------------------------------------
