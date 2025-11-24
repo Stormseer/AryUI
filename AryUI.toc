@@ -10,3 +10,4 @@ modules/TooltipAnchor.lua
 modules/ChatBackground.lua
 modules/VaultReport.lua
 modules/AHFilter.lua
+modules/PartyGreeting.lua

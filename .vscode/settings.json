@@ -33,6 +33,7 @@
         "DEFAULT_CHAT_FRAME",
         "AuctionHouseFrame",
         "ProfessionsCustomerOrdersFrame",
-        "LE_EXPANSION_LEVEL_CURRENT"
+        "LE_EXPANSION_LEVEL_CURRENT",
+        "SettingsPanel"
     ]
 }

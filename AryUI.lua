@@ -398,6 +398,103 @@ local function CreateOptionsPanel()
         --]]
     end)
 
+    -------------------------------------------------------
+    -- Party Greeting Subpanel
+    -------------------------------------------------------
+    CreateSubpanel("Party Greeting", function(p)
+
+        if not AryUIDB.partyGreeting then
+            if AryUI.PartyGreetingModule and AryUI.PartyGreetingModule.RegisterDefaults then
+                AryUI.PartyGreetingModule:RegisterDefaults()
+            else
+                AryUIDB.partyGreeting = { delayMin = 6, delayMax = 10, greetings = {} }
+            end
+        end
+
+        CreateHeader(p, "Party Greeting", -16)
+
+        -- Enable checkbox
+        local enable = CreateFrame("CheckButton", nil, p, "ChatConfigCheckButtonTemplate")
+        enable:SetPoint("TOPLEFT", 16, -50)
+        enable.Text:SetText("Enable Party Greeting")
+        enable:SetChecked(AryUIDB.partyGreeting and AryUIDB.partyGreeting.enabled)
+        enable:SetScript("OnClick", function(self)
+            AryUIDB.partyGreeting.enabled = self:GetChecked()
+            if AryUI.PartyGreetingModule and AryUI.PartyGreetingModule.Toggle then
+                AryUI.PartyGreetingModule:Toggle(self:GetChecked())
+            end
+        end)
+
+        -- Delay min
+        local minLabel = p:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+        minLabel:SetPoint("TOPLEFT", enable, "BOTTOMLEFT", 0, -20)
+        minLabel:SetText("Minimum Delay (seconds)")
+
+        local minBox = CreateFrame("EditBox", nil, p, "InputBoxTemplate")
+        minBox:SetSize(50, 30)
+        minBox:SetAutoFocus(false)
+        minBox:SetPoint("TOPLEFT", minLabel, "BOTTOMLEFT", 0, -6)
+        minBox:SetText(AryUIDB.partyGreeting.delayMin or 6)
+        minBox:SetCursorPosition(0)
+        minBox:SetScript("OnEditFocusLost", function(self)
+            AryUIDB.partyGreeting.delayMin = tonumber(self:GetText()) or 6
+            self:SetText(AryUIDB.partyGreeting.delayMin)
+        end)
+
+        -- Delay max
+        local maxLabel = p:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+        maxLabel:SetPoint("TOPLEFT", minBox, "BOTTOMLEFT", 0, -12)
+        maxLabel:SetText("Maximum Delay (seconds)")
+
+        local maxBox = CreateFrame("EditBox", nil, p, "InputBoxTemplate")
+        maxBox:SetSize(50, 30)
+        maxBox:SetAutoFocus(false)
+        maxBox:SetPoint("TOPLEFT", maxLabel, "BOTTOMLEFT", 0, -6)
+        maxBox:SetText(AryUIDB.partyGreeting.delayMax or 10)
+        maxBox:SetCursorPosition(0)
+        maxBox:SetScript("OnEditFocusLost", function(self)
+            AryUIDB.partyGreeting.delayMax = tonumber(self:GetText()) or 10
+            self:SetText(AryUIDB.partyGreeting.delayMax)
+        end)
+
+        -- Greeting list header
+        local glHeader = p:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+        glHeader:SetPoint("TOPLEFT", maxBox, "BOTTOMLEFT", 0, -20)
+        glHeader:SetText("Greeting Messages (random selection):")
+
+        -- Display + edit each greeting (dynamic)
+        local y = -6
+        for i, msg in ipairs(AryUIDB.partyGreeting.greetings) do
+            local box = CreateFrame("EditBox", nil, p, "InputBoxTemplate")
+            box:SetSize(300, 30)
+            box:SetAutoFocus(false)
+            box:SetPoint("TOPLEFT", glHeader, "BOTTOMLEFT", 0, y)
+            box:SetText(msg)
+            box:SetCursorPosition(0)
+            box:SetScript("OnEditFocusLost", function(self)
+                AryUIDB.partyGreeting.greetings[i] = self:GetText()
+            end)
+            y = y - 35
+        end
+
+        -- Button: Add greeting
+        local addBtn = CreateFrame("Button", nil, p, "UIPanelButtonTemplate")
+        addBtn:SetSize(140, 24)
+        addBtn:SetPoint("TOPLEFT", glHeader, "BOTTOMLEFT", 0, y)
+        addBtn:SetText("Add Greeting")
+        addBtn:SetScript("OnClick", function()
+            tinsert(AryUIDB.partyGreeting.greetings, "New greeting")
+
+            -- Close & reopen the settings panel to force a rebuild
+            SettingsPanel:Hide()
+            C_Timer.After(0, function()
+                Settings.OpenToCategory("AryUI")
+            end)
+        end)
+
+    end)
+
+
 end
 
 ------------------------------------------------------------
