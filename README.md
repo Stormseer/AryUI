@@ -14,5 +14,8 @@ A small personal AddOn for WoW that simply takes some minor Weakauras and makes 
   > Causes the "Current Expansion Only" filter setting in the Auction House & Crafting Orders to be automatically ticked.
   > Puts your cursor focus on the search bar, so you can instantly start typing when you open the Auction House/Crafting Orders
 
+- PartyGreeter
+  > Sends a random message to party chat when you join party. Config to pick what messages.
+
 
 That's it. It doesn't do anything else. If you randomly stumble upon this in the future, dear reader, I won't be maintaining or supporting this for anything other then my personal use. 
