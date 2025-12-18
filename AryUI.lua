@@ -1,9 +1,6 @@
---========================================--
--- AryUI - Main AddOn File (fixed)
---========================================--
-
 AryUI = AryUI or {}
 AryUI.modules = AryUI.modules or {}
+local settingsCategory
 
 ------------------------------------------------------------
 -- APPLY GLOBAL DEFAULTS
@@ -27,13 +24,19 @@ end
 SLASH_ARYUI1 = "/aryui"
 SlashCmdList["ARYUI"] = function()
     if Settings and Settings.OpenToCategory then
-        Settings.OpenToCategory("AryUI")
+        if settingsCategory and settingsCategory.GetID then
+                Settings.OpenToCategory(settingsCategory:GetID())
+            else
+                Settings.OpenToCategory("AryUI")
+            end
     else
-        if AryUIOptionsPanel then
-            InterfaceOptionsFrame_OpenToCategory(AryUIOptionsPanel)
-            InterfaceOptionsFrame_OpenToCategory(AryUIOptionsPanel)
-        end
+        print("|cffffff00[AryUI]|r Unable to open options menu. Try manually?")
     end
+end
+
+SLASH_CDM1 = "/cdm"
+SlashCmdList["CDM"] = function()
+    CooldownViewerSettings:ShowUIPanel(false)
 end
 
 ------------------------------------------------------------
@@ -115,10 +118,10 @@ local function CreateOptionsPanel()
         if builder then builder(sub) end
 
         if Settings and Settings.RegisterCanvasLayoutSubcategory and mainCategory then
-            local subcat = Settings.RegisterCanvasLayoutSubcategory(mainCategory, sub, title)
-            Settings.RegisterAddOnCategory(subcat)
+            settingsCategory = Settings.RegisterCanvasLayoutSubcategory(mainCategory, sub, title)
+            Settings.RegisterAddOnCategory(settingsCategory)
         else
-            InterfaceOptions_AddCategory(sub)
+            print("|cffffff00[AryUI]|r Unable to register options panel: no Settings or InterfaceOptions API found.")
         end
     end
 
