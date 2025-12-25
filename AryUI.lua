@@ -42,6 +42,18 @@ SlashCmdList["CDM"] = function()
     CooldownViewerSettings:ShowUIPanel(false)
 end
 
+SLASH_PULL1 = "/pull"
+SlashCmdList["PULL"] = function(msg)
+    local seconds = tonumber(msg)
+
+    seconds = math.floor(seconds)
+    seconds = math.max(0, math.min(30, seconds))
+
+    C_PartyInfo.DoCountdown(seconds)
+end
+
+--C_PartyInfo.DoCountdown(seconds)
+
 ------------------------------------------------------------
 -- OPTIONS PANEL HELPERS
 ------------------------------------------------------------
@@ -509,21 +521,39 @@ local function CreateOptionsPanel()
         local vrCheckbox = CreateFrame("CheckButton", "AryUIMissingTargetButton", p, "ChatConfigCheckButtonTemplate")
         vrCheckbox:SetPoint("TOPLEFT", 16, -50)
         vrCheckbox.Text:SetText("Enable Missing Target Text")
-        vrCheckbox:SetChecked(true)
+        vrCheckbox:SetChecked(AryUIDB.targetMissingEnabled)
         vrCheckbox:SetScript("OnClick", function(self)
-            print("NYI Button")
+            AryUIDB.targetMissingEnabled = self:GetChecked()
+            if AryUI.MissingTargetModule and AryUI.MissingTargetModule.UpdateMissingTarget then
+                AryUI.MissingTargetModule:UpdateMissingTarget()
+            end
         end)
 
         CreateSliderWithBox("AryUIMissingTargetX", p, "Offset X", -1000, 1000, AryUIDB.targetMissingOffsetX or globalDefaults.targetMissingOffsetX, 16, -100,
-            function(v) AryUIDB.targetMissingOffsetX = v end
+            function(v) 
+                AryUIDB.targetMissingOffsetX = v
+                if AryUI.MissingTargetModule and AryUI.MissingTargetModule.UpdateMissingTarget then
+                    AryUI.MissingTargetModule:UpdateMissingTarget()
+                end
+            end
         )
 
         CreateSliderWithBox("AryUIMissingTargetY", p, "Offset Y", -1000, 1000, AryUIDB.targetMissingOffsetY or globalDefaults.targetMissingOffsetY, 16, -170,
-            function(v) AryUIDB.targetMissingOffsetY = v end
+            function(v) 
+                AryUIDB.targetMissingOffsetY = v
+                if AryUI.MissingTargetModule and AryUI.MissingTargetModule.UpdateMissingTarget then
+                    AryUI.MissingTargetModule:UpdateMissingTarget()
+                end
+            end
         )
 
-        CreateSliderWithBox("AryUIMissingTargetFontSize", p, "Font Size", -200, 200, AryUIDB.targetMissingFontSize or globalDefaults.targetMissingFontSize, 16, -240,
-            function(v) AryUIDB.targetMissingFontSize = v end
+        CreateSliderWithBox("AryUIMissingTargetFontSize", p, "Font Size", 1, 200, AryUIDB.targetMissingFontSize or globalDefaults.targetMissingFontSize, 16, -240,
+            function(v) 
+                AryUIDB.targetMissingFontSize = v
+                if AryUI.MissingTargetModule and AryUI.MissingTargetModule.UpdateMissingTarget then
+                    AryUI.MissingTargetModule:UpdateMissingTarget()
+                end
+            end
         )
     end)
 

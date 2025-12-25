@@ -1,4 +1,5 @@
 local module = {}
+AryUI.MissingTarget = module
 table.insert(AryUI.modules, module)
 
 local tFrame = CreateFrame("Frame")
@@ -49,7 +50,35 @@ local function HideNoTarget()
     end
 end
 
+function module:UpdateMissingTarget()
+    if not AryUIDB.targetMissingEnabled then
+        HideNoTarget()
+        return
+    end
+
+    comatTextFrame:ClearAllPoints()
+    comatTextFrame:SetPoint(
+        "CENTER",
+        UIParent,
+        "CENTER",
+        AryUIDB.targetMissingOffsetX or 0,
+        AryUIDB.targetMissingOffsetY or 450
+    )
+
+    local size = AryUIDB.targetMissingFontSize or 60
+    combatText:SetFont("Fonts\\FRIZQT__.TTF", size, "OUTLINE")
+end
+
+function module:OnLoad()
+    self:UpdateMissingTarget()
+end
+
 tFrame:SetScript("OnEvent", function()
+    if not AryUIDB.targetMissingEnabled then
+        HideNoTarget()
+        return
+    end
+
     if (not UnitExists("target")) and UnitAffectingCombat("player") then
         ShowNoTarget()
     else
