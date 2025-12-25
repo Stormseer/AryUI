@@ -11,3 +11,4 @@ modules/ChatBackground.lua
 modules/VaultReport.lua
 modules/AHFilter.lua
 modules/PartyGreeting.lua
+modules/MissingTarget.lua

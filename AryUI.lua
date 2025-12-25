@@ -8,6 +8,9 @@ local settingsCategory
 local globalDefaults = {
     tooltipOffsetX = -350,
     tooltipOffsetY = 165,
+    targetMissingOffsetX = 0,
+    targetMissingOffsetY = 450,
+    targetMissingFontSize = 60,
 }
 
 local function ApplyDefaults(target, defaults)
@@ -495,6 +498,33 @@ local function CreateOptionsPanel()
             end)
         end)
 
+    end)
+
+    -------------------------------------------------------
+    -- Missing Target subpanel
+    -------------------------------------------------------
+    CreateSubpanel("Missing Target", function(p)
+        CreateHeader(p, "Missing Target", -16)
+
+        local vrCheckbox = CreateFrame("CheckButton", "AryUIMissingTargetButton", p, "ChatConfigCheckButtonTemplate")
+        vrCheckbox:SetPoint("TOPLEFT", 16, -50)
+        vrCheckbox.Text:SetText("Enable Missing Target Text")
+        vrCheckbox:SetChecked(true)
+        vrCheckbox:SetScript("OnClick", function(self)
+            print("NYI Button")
+        end)
+
+        CreateSliderWithBox("AryUIMissingTargetX", p, "Offset X", -1000, 1000, AryUIDB.targetMissingOffsetX or globalDefaults.targetMissingOffsetX, 16, -100,
+            function(v) AryUIDB.targetMissingOffsetX = v end
+        )
+
+        CreateSliderWithBox("AryUIMissingTargetY", p, "Offset Y", -1000, 1000, AryUIDB.targetMissingOffsetY or globalDefaults.targetMissingOffsetY, 16, -170,
+            function(v) AryUIDB.targetMissingOffsetY = v end
+        )
+
+        CreateSliderWithBox("AryUIMissingTargetFontSize", p, "Font Size", -200, 200, AryUIDB.targetMissingFontSize or globalDefaults.targetMissingFontSize, 16, -240,
+            function(v) AryUIDB.targetMissingFontSize = v end
+        )
     end)
 
 
