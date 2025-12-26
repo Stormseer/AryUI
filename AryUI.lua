@@ -518,11 +518,11 @@ local function CreateOptionsPanel()
     CreateSubpanel("Missing Target", function(p)
         CreateHeader(p, "Missing Target", -16)
 
-        local vrCheckbox = CreateFrame("CheckButton", "AryUIMissingTargetButton", p, "ChatConfigCheckButtonTemplate")
-        vrCheckbox:SetPoint("TOPLEFT", 16, -50)
-        vrCheckbox.Text:SetText("Enable Missing Target Text")
-        vrCheckbox:SetChecked(AryUIDB.targetMissingEnabled)
-        vrCheckbox:SetScript("OnClick", function(self)
+        local mtCheckbox = CreateFrame("CheckButton", "AryUIMissingTargetButton", p, "ChatConfigCheckButtonTemplate")
+        mtCheckbox:SetPoint("TOPLEFT", 16, -50)
+        mtCheckbox.Text:SetText("Enable Missing Target Text")
+        mtCheckbox:SetChecked(AryUIDB.targetMissingEnabled)
+        mtCheckbox:SetScript("OnClick", function(self)
             AryUIDB.targetMissingEnabled = self:GetChecked()
             if AryUI.MissingTargetModule and AryUI.MissingTargetModule.UpdateMissingTarget then
                 AryUI.MissingTargetModule:UpdateMissingTarget()
@@ -557,7 +557,34 @@ local function CreateOptionsPanel()
         )
     end)
 
+    -------------------------------------------------------
+    -- Combat Timer subpanel
+    -------------------------------------------------------
+    CreateSubpanel("Combat Timer", function(p)
+        CreateHeader(p, "Combat Timer", -16)
 
+        local ctCheckbox = CreateFrame("CheckButton", "AryUICombatTimerEnableButton", p, "ChatConfigCheckButtonTemplate")
+        ctCheckbox:SetPoint("TOPLEFT", 16, -50)
+        ctCheckbox.Text:SetText("Enable Combat Timer")
+        ctCheckbox:SetChecked(AryUIDB.combatTimerEnabled)
+        ctCheckbox:SetScript("OnClick", function(self)
+            AryUIDB.combatTimerEnabled = self:GetChecked()
+            if AryUI.CombatTimerModule and AryUI.CombatTimerModule.AryUIToggleCombatTimer then
+                AryUI.CombatTimerModule:AryUIToggleCombatTimer()
+            end
+        end)
+
+        local ctLockCheckbox = CreateFrame("CheckButton", "AryUICombatTimerLockButton", p, "ChatConfigCheckButtonTemplate")
+        ctLockCheckbox:SetPoint("TOPLEFT", 16, -70)
+        ctLockCheckbox.Text:SetText("Lock Combat Timer")
+        ctLockCheckbox:SetChecked(AryUIDB.combatTimerLocked)
+        ctLockCheckbox:SetScript("OnClick", function(self)
+            AryUIDB.combatTimerLocked = self:GetChecked()
+            if AryUI.CombatTimerModule and AryUI.CombatTimerModule.AryUILockCombatTimer then
+                AryUI.CombatTimerModule:AryUILockCombatTimer()
+            end
+        end)
+    end)
 end
 
 ------------------------------------------------------------
