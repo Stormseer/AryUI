@@ -34,6 +34,8 @@
         "AuctionHouseFrame",
         "ProfessionsCustomerOrdersFrame",
         "LE_EXPANSION_LEVEL_CURRENT",
-        "SettingsPanel"
+        "SettingsPanel",
+        "BuffFrame",
+        "DebuffFrame"
     ]
 }
