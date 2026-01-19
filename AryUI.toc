@@ -3,6 +3,7 @@
 ## Title: AryUI
 ## Notes: Hopefully modular minor UI tweaks
 ## Category: Ary's Personals
+## IconTexture: Interface/AddOns/AryUI/arys-intellect
 ## Author: Aryella
 ## SavedVariables: AryUIDB
 
