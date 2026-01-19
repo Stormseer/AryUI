@@ -2,6 +2,7 @@
 ## Version: 0.1
 ## Title: AryUI
 ## Notes: Hopefully modular minor UI tweaks
+## Category: Ary's Personals
 ## Author: Aryella
 ## SavedVariables: AryUIDB
 
