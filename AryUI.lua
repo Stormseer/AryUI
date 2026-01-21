@@ -42,6 +42,11 @@ SlashCmdList["CDM"] = function()
     CooldownViewerSettings:ShowUIPanel(false)
 end
 
+SLASH_WA = "/wa"
+SlashCmdList["WA"] = function()
+    CooldownViewerSettings:ShowUIPanel(false)
+end
+
 SLASH_PULL1 = "/pull"
 SlashCmdList["PULL"] = function(msg)
     local seconds = tonumber(msg)
