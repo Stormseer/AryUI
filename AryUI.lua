@@ -42,7 +42,7 @@ SlashCmdList["CDM"] = function()
     CooldownViewerSettings:ShowUIPanel(false)
 end
 
-SLASH_WA = "/wa"
+SLASH_WA1 = "/wa"
 SlashCmdList["WA"] = function()
     CooldownViewerSettings:ShowUIPanel(false)
 end
