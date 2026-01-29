@@ -37,11 +37,6 @@ SlashCmdList["ARYUI"] = function()
     end
 end
 
-SLASH_CDM1 = "/cdm"
-SlashCmdList["CDM"] = function()
-    CooldownViewerSettings:ShowUIPanel(false)
-end
-
 SLASH_WA1 = "/wa"
 SlashCmdList["WA"] = function()
     CooldownViewerSettings:ShowUIPanel(false)
@@ -57,7 +52,6 @@ SlashCmdList["PULL"] = function(msg)
     C_PartyInfo.DoCountdown(seconds)
 end
 
---C_PartyInfo.DoCountdown(seconds)
 
 ------------------------------------------------------------
 -- OPTIONS PANEL HELPERS
@@ -587,6 +581,35 @@ local function CreateOptionsPanel()
             AryUIDB.combatTimerLocked = self:GetChecked()
             if AryUI.CombatTimerModule and AryUI.CombatTimerModule.AryUILockCombatTimer then
                 AryUI.CombatTimerModule:AryUILockCombatTimer()
+            end
+        end)
+    end)
+
+    -------------------------------------------------------
+    -- InterruptShields subpanel
+    -------------------------------------------------------
+    CreateSubpanel("Interrupt Shields", function(p)
+        CreateHeader(p, "Interrupt Shields", -16)
+
+        local interrShieldCheckbox = CreateFrame("CheckButton", "AryUIInterruptShieldsEnableButton", p, "ChatConfigCheckButtonTemplate")
+        interrShieldCheckbox:SetPoint("TOPLEFT", 16, -50)
+        interrShieldCheckbox.Text:SetText("Enable InterruptShields")
+        interrShieldCheckbox:SetChecked(AryUIDB.interruptShieldsEnabled)
+        interrShieldCheckbox:SetScript("OnClick", function(self)
+            AryUIDB.interruptShieldsEnabled = self:GetChecked()
+            if AryUI.InterruptShieldsModule and AryUI.InterruptShieldsModule.AryUIToggleCombatTimer then
+                AryUI.InterruptShieldsModule:AryUIToggleInterruptShields()
+            end
+        end)
+
+        local interrShieldLockCheckbox = CreateFrame("CheckButton", "AryUIInterruptShieldsLockButton", p, "ChatConfigCheckButtonTemplate")
+        interrShieldLockCheckbox:SetPoint("TOPLEFT", 16, -70)
+        interrShieldLockCheckbox.Text:SetText("Lock InterruptShields")
+        interrShieldLockCheckbox:SetChecked(AryUIDB.interruptShieldsLocked)
+        interrShieldLockCheckbox:SetScript("OnClick", function(self)
+            AryUIDB.interruptShieldsLocked = self:GetChecked()
+            if AryUI.InterruptShieldsModule and AryUI.InterruptShieldsModule.AryUILockCombatTimer then
+                AryUI.InterruptShieldsModule:AryUILockInterruptShields()
             end
         end)
     end)

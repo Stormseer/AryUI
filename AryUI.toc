@@ -16,3 +16,4 @@ modules/PartyGreeting.lua
 modules/MissingTarget.lua
 modules/CombatTimer.lua
 modules/DisableBlizzardFunctions.lua
+modules/UninterruptibleShields.lua
