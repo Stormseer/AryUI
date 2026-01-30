@@ -36,7 +36,9 @@
         "LE_EXPANSION_LEVEL_CURRENT",
         "SettingsPanel",
         "BuffFrame",
-        "DebuffFrame"
+        "DebuffFrame",
+        "EventUtil",
+        "BuffIconCooldownViewer"
     ],
     "Lua.type.weakUnionCheck": true
 }
