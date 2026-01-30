@@ -34,6 +34,16 @@ f:SetScript("OnEvent", function()
     SetCVar("floatingCombatTextPetMeleeDamage", 0)
     SetCVar("floatingCombatTextPetSpellDamage", 0)
 
+    hooksecurefunc("CompactUnitFrame_UpdateVisible", function(Frame)
+    if Frame.Skinned or not Frame.centerStatusIcon then return end
+    Frame.background:SetIgnoreParentAlpha(true)
+    Frame.Skinned = true
+    end)
+
+    hooksecurefunc("CompactUnitFrame_UpdateCenterStatusIcon", function(Frame)
+    if Frame.outOfRange ~= nil then Frame:SetAlphaFromBoolean(Frame.outOfRange, 0.35, 1) end
+    end)
+
     C_Timer.After(3, placeboRemoveQuests)
 
     -- Cleanup: run once, then go dormant
