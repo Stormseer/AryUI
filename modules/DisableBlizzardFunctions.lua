@@ -51,14 +51,16 @@ f:SetScript("OnEvent", function()
     f:SetScript("OnEvent", nil)
 end)
 
---[[ Hides the cooldown text on all of the buff frames in the cooldown manager. 
+-----
+local debugCooldownText = false
+
 local function HideCooldownText(cooldownFrame)
   if not cooldownFrame then return end
-  
+
   -- Hide countdown numbers
   cooldownFrame:SetHideCountdownNumbers(true)
   cooldownFrame:SetDrawEdge(false)
-  
+
   -- Hide any FontStrings in the cooldown
   for _, region in ipairs({ cooldownFrame:GetRegions() }) do
     if region:GetObjectType() == "FontString" then
@@ -68,22 +70,65 @@ local function HideCooldownText(cooldownFrame)
   end
 end
 
+-- CooldownIDs to hide text for
+local hideCooldownIDs = {
+  [26467] = true,  -- Frostfire Empowerment
+  [93744] = true,  -- Freezing
+  [91122] = true,  -- Arcane Salvo
+}
+
 EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_ENTERING_WORLD", function()
-  
-  -- Hook the SetCooldown function which is called when cooldowns are updated
+  if debugCooldownText then
+    print("=== Hooking SetCooldown with cooldownID filter ===")
+  end
+
+  -- Hook the SetCooldown function
   hooksecurefunc(getmetatable(CreateFrame("Cooldown")).__index, "SetCooldown", function(self)
-    -- Check if this cooldown belongs to BuffIconCooldownViewer
     local parent = self:GetParent()
     if parent and parent:GetParent() == BuffIconCooldownViewer then
-      HideCooldownText(self)
+      -- Check if this parent has a cooldownID we want to hide
+      if parent.cooldownID and hideCooldownIDs[parent.cooldownID] then
+        if debugCooldownText then
+            print("Hiding cooldown text for cooldownID: " .. parent.cooldownID)
+        end
+        HideCooldownText(self)
+      end
     end
   end)
-  
+
   -- Also process existing ones
-  for _, CdFrame in ipairs({ BuffIconCooldownViewer:GetChildren() }) do
-    if CdFrame.Cooldown then
-      HideCooldownText(CdFrame.Cooldown)
+  C_Timer.After(1, function()
+    local children = { BuffIconCooldownViewer:GetChildren() }
+    for i, CdFrame in ipairs(children) do
+      if CdFrame.Cooldown and CdFrame.cooldownID and hideCooldownIDs[CdFrame.cooldownID] then
+        if debugCooldownText then
+            print("Processing existing cooldownID: " .. CdFrame.cooldownID)
+        end
+        HideCooldownText(CdFrame.Cooldown)
+      end
     end
-  end
+  end)
 end)
---]]
+
+if debugCooldownText then
+    EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_ENTERING_WORLD", function()
+    C_Timer.After(3, function()
+        print("=== Finding cooldownIDs ===")
+        local children = { BuffIconCooldownViewer:GetChildren() }
+
+        for i, child in ipairs(children) do
+        if child.cooldownID then
+            print("Child " .. i .. " has cooldownID: " .. child.cooldownID)
+
+            -- Try to get the spell name
+            if child.GetNameText then
+            local name = child:GetNameText()
+            if name then
+                print("  Name: " .. name)
+            end
+            end
+        end
+        end
+    end)
+    end)
+end
