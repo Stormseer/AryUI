@@ -188,15 +188,19 @@ targetFrame:SetScript("OnEvent", function(_, event, unit, _, spellId)
     if (event == "UNIT_SPELLCAST_START") then
         if unit == "target" then
             local name, _, _, _, _, _, _, notInterruptible = UnitCastingInfo("target")
-            ShowTargetShield()
-            targetFrame:SetAlphaFromBoolean(notInterruptible, 1, 0)
+            if name then
+                ShowTargetShield()
+                targetFrame:SetAlphaFromBoolean(notInterruptible, 1, 0)
+            end
             return
         end
 
         if unit == "focus" then
             local name, _, _, _, _, _, _, notInterruptible = UnitCastingInfo("focus")
-            ShowFocusShield()
-            focusFrame:SetAlphaFromBoolean(notInterruptible, 1, 0)
+            if name then
+                ShowFocusShield()
+                focusFrame:SetAlphaFromBoolean(notInterruptible, 1, 0)
+            end
             return
         end
 
@@ -207,15 +211,19 @@ targetFrame:SetScript("OnEvent", function(_, event, unit, _, spellId)
     if (event == "UNIT_SPELLCAST_CHANNEL_START") then
         if unit == "target" then
             local name, _, _, _, _, _, _, notInterruptible = UnitChannelInfo("target")
-            ShowTargetShield()
-            targetFrame:SetAlphaFromBoolean(notInterruptible, 1, 0)
+            if name then
+                ShowTargetShield()
+                targetFrame:SetAlphaFromBoolean(notInterruptible, 1, 0)
+            end
             return
         end
 
         if unit == "focus" then
             local name, _, _, _, _, _, _, notInterruptible = UnitCastingInfo("focus")
-            ShowFocusShield()
-            focusFrame:SetAlphaFromBoolean(notInterruptible, 1, 0)
+            if name then
+                ShowFocusShield()
+                focusFrame:SetAlphaFromBoolean(notInterruptible, 1, 0)
+            end
             return
         end
 
