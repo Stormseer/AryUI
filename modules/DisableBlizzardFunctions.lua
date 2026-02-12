@@ -77,23 +77,6 @@ local hideCooldownIDs = {
   [91122] = true,  -- Arcane Salvo
 }
 
-local colorCurve = C_CurveUtil.CreateColorCurve()
-colorCurve:SetType(Enum.LuaCurveType.Step)
-colorCurve:AddPoint(0,  CreateColor(1, 1, 1, 1)) -- white
-colorCurve:AddPoint(20, CreateColor(1, 0, 0, 1)) -- red
-
-local function ApplyStackColor(countFontString)
-    if not countFontString then return end
-
-    local value = countFontString:GetText()
-    if not value then return end
-
-    local color = colorCurve:Evaluate(value)
-    if color then
-        countFontString:SetTextColor(color:GetRGBA())
-    end
-end
-
 EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_ENTERING_WORLD", function()
   if debugCooldownText then
     print("=== Hooking SetCooldown with cooldownID filter ===")
@@ -110,9 +93,6 @@ EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_ENTERING_WORLD", function()
         end
         HideCooldownText(self)
       end
-      --if parent.Count then
-      --    ApplyStackColor(parent.Count)
-      --end
     end
   end)
 
