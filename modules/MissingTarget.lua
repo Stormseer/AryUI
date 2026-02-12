@@ -50,7 +50,7 @@ local function HideNoTarget()
     end
 end
 
-function module:UpdateMissingTarget()
+function module:UpdateGatewayUsable()
     if not AryUIDB.targetMissingEnabled then
         HideNoTarget()
         return
@@ -70,7 +70,7 @@ function module:UpdateMissingTarget()
 end
 
 function module:OnLoad()
-    self:UpdateMissingTarget()
+    self:UpdateGatewayUsable()
 end
 
 tFrame:SetScript("OnEvent", function()

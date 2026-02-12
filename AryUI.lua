@@ -11,6 +11,9 @@ local globalDefaults = {
     targetMissingOffsetX = 0,
     targetMissingOffsetY = 450,
     targetMissingFontSize = 60,
+    gatewayUsableOffsetX = 0,
+    gatewayUsableOffsetY = 450,
+    gatewayUsableFontSize = 60,
 }
 
 local function ApplyDefaults(target, defaults)
@@ -551,6 +554,51 @@ local function CreateOptionsPanel()
                 AryUIDB.targetMissingFontSize = v
                 if AryUI.MissingTargetModule and AryUI.MissingTargetModule.UpdateMissingTarget then
                     AryUI.MissingTargetModule:UpdateMissingTarget()
+                end
+            end
+        )
+    end)
+
+    -------------------------------------------------------
+    -- Gateway Usable subpanel
+    -------------------------------------------------------
+    CreateSubpanel("Gateway Usable", function(p)
+        CreateHeader(p, "Gateway Usable", -16)
+
+        local guCheckbox = CreateFrame("CheckButton", "AryUIGatewayUsableButton", p, "ChatConfigCheckButtonTemplate")
+        guCheckbox:SetPoint("TOPLEFT", 16, -50)
+        guCheckbox.Text:SetText("Enable Gateway Usable Text")
+        guCheckbox:SetChecked(AryUIDB.gatewayTextEnabled)
+        guCheckbox:SetScript("OnClick", function(self)
+            AryUIDB.gatewayTextEnabled = self:GetChecked()
+            if AryUI.GatewayUsableModule and AryUI.GatewayUsableModule.UpdateGatewayText then
+                AryUI.GatewayUsableModule:UpdateGatewayText()
+            end
+        end)
+
+        CreateSliderWithBox("AryUIGatewayUsableX", p, "Offset X", -1000, 1000, AryUIDB.GatewayUsableOffsetX or globalDefaults.gatewayUsableOffsetX, 16, -100,
+            function(v)
+                AryUIDB.gatewayUsableOffsetX = v
+                if AryUI.GatewayUsableModule and AryUI.GatewayUsableModule.UpdateGatewayText then
+                    AryUI.GatewayUsableModule:UpdateGatewayText()
+                end
+            end
+        )
+
+        CreateSliderWithBox("AryUIGatewayUsableY", p, "Offset Y", -1000, 1000, AryUIDB.GatewayUsableOffsetY or globalDefaults.gatewayUsableOffsetY, 16, -170,
+            function(v)
+                AryUIDB.gatewayUsableOffsetY = v
+                if AryUI.GatewayUsableModule and AryUI.GatewayUsableModule.UpdateGatewayText then
+                    AryUI.GatewayUsableModule:UpdateGatewayText()
+                end
+            end
+        )
+
+        CreateSliderWithBox("AryUIGatewayUsableFontSize", p, "Font Size", 1, 200, AryUIDB.GatewayUsableFontSize or globalDefaults.gatewayUsableFontSize, 16, -240,
+            function(v)
+                AryUIDB.gatewayUsableFontSize = v
+                if AryUI.GatewayUsableModule and AryUI.GatewayUsableModule.UpdateGatewayText then
+                    AryUI.GatewayUsableModule:UpdateGatewayText()
                 end
             end
         )
