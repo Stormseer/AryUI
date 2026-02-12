@@ -7,12 +7,12 @@ local DEFAULT_FOCUS_POINT  = { "CENTER", UIParent, "CENTER", 0, 70 }
 local targetFrame = CreateFrame("Frame", "SpellcastingTargetShieldFrame", UIParent, "BackdropTemplate")
 local focusFrame = CreateFrame("Frame", "SpellcastingFocusShieldFrame", UIParent, "BackdropTemplate")
 
-targetFrame:SetSize(42, 42)
+targetFrame:SetSize(48, 48)
 targetFrame:SetPoint("CENTER")
 targetFrame:SetFrameStrata("HIGH")
 targetFrame:SetFrameLevel(100)
 
-focusFrame:SetSize(42, 42)
+focusFrame:SetSize(48, 48)
 focusFrame:SetPoint("CENTER")
 focusFrame:SetFrameStrata("HIGH")
 focusFrame:SetFrameLevel(100)
