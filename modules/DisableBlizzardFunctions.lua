@@ -28,18 +28,20 @@ f:SetScript("OnEvent", function()
     end
 
     -- Disable floating combat text elements
-    SetCVar("floatingCombatTextCombatDamage", 0)
-    SetCVar("floatingCombatTextCombatHealing", 0)
-    SetCVar("floatingCombatTextCombatLogPeriodicSpells", 0)
-    SetCVar("floatingCombatTextPetMeleeDamage", 0)
-    SetCVar("floatingCombatTextPetSpellDamage", 0)
+    --SetCVar("floatingCombatTextCombatDamage", 0)
+    --SetCVar("floatingCombatTextCombatHealing", 0)
+    --SetCVar("floatingCombatTextCombatLogPeriodicSpells", 0)
+    --SetCVar("floatingCombatTextPetMeleeDamage", 0)
+    --SetCVar("floatingCombatTextPetSpellDamage", 0)
 
+    -- For changing the party frames fade level when out of range.
     hooksecurefunc("CompactUnitFrame_UpdateVisible", function(Frame)
     if Frame.Skinned or not Frame.centerStatusIcon then return end
     Frame.background:SetIgnoreParentAlpha(true)
     Frame.Skinned = true
     end)
 
+    -- For changing the party frames fade level when out of range.
     hooksecurefunc("CompactUnitFrame_UpdateCenterStatusIcon", function(Frame)
     if Frame.outOfRange ~= nil then Frame:SetAlphaFromBoolean(Frame.outOfRange, 0.35, 1) end
     end)
@@ -51,7 +53,7 @@ f:SetScript("OnEvent", function()
     f:SetScript("OnEvent", nil)
 end)
 
------
+----- Everything below here is for hiding aura duration on the specified CooldownID's 
 local debugCooldownText = false
 
 local function HideCooldownText(cooldownFrame)
@@ -69,6 +71,47 @@ local function HideCooldownText(cooldownFrame)
     end
   end
 end
+
+--[[
+local stackColorCurve = C_CurveUtil.CreateColorCurve()
+stackColorCurve:SetType(Enum.LuaCurveType.Step)
+stackColorCurve:AddPoint(0,  CreateColor(1, 1, 1, 1)) -- white
+stackColorCurve:AddPoint(18, CreateColor(1, 1, 0, 1)) -- yellow
+stackColorCurve:AddPoint(20, CreateColor(1, 0, 0, 1)) -- red
+
+local function HookStackFontString(fs)
+  if fs.__stackHooked then return end
+  fs.__stackHooked = true
+
+  hooksecurefunc(fs, "SetText", function(self, text)
+    local count = tonumber(text)
+    if not count then return end
+
+    local color = stackColorCurve:Evaluate(count)
+    if color then
+      self:SetTextColor(color:GetRGBA())
+    end
+  end)
+end
+
+local function ProcessBuffIcons()
+  for _, icon in ipairs({ BuffIconCooldownViewer:GetChildren() }) do
+    for _, sub in ipairs({ icon:GetChildren() }) do
+      if sub:GetObjectType() ~= "Cooldown" then
+        for _, region in ipairs({ sub:GetRegions() }) do
+          if region:GetObjectType() == "FontString" then
+            HookStackFontString(region)
+          end
+        end
+      end
+    end
+  end
+end
+
+EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_ENTERING_WORLD", function()
+  C_Timer.After(1, ProcessBuffIcons)
+end)
+--]]
 
 -- CooldownIDs to hide text for
 local hideCooldownIDs = {
@@ -106,9 +149,6 @@ EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_ENTERING_WORLD", function()
         end
         HideCooldownText(CdFrame.Cooldown)
       end
-      --if CdFrame.Count and hideCooldownIDs[CdFrame.cooldownID] then 
-      --  ApplyStackColor(CdFrame.Count)
-      --end 
     end
   end)
 end)

@@ -40,11 +40,6 @@ SlashCmdList["ARYUI"] = function()
     end
 end
 
-SLASH_WA1 = "/wa"
-SlashCmdList["WA"] = function()
-    CooldownViewerSettings:ShowUIPanel(false)
-end
-
 SLASH_PULL1 = "/pull"
 SlashCmdList["PULL"] = function(msg)
     local seconds = tonumber(msg)
